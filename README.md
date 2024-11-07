@@ -8,6 +8,10 @@ Learn more [here](https://github.com/lightningdevkit/vss-server/blob/main/README
 
 ## Usage
 
+```
+dotnet add package VSS
+```
+
 At its core, the interface IVSSAPI defines all the methods required for both server and client. The library then provides two concrete implementations of the IVSSAPI interface:
 * HttpVSSAPIClient - a client that communicates with the VSS server over HTTP. Any authentication mechanism can be hooked up to the provided HttpClient.
 * VSSApiEncryptorClient - a client that allows encrypting the data before sending/receiving it from the VSS server. This does not handle actual communication, but rather wraps around another IVSSAPI implementation.
