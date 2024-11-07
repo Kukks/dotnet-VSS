@@ -13,11 +13,12 @@
         <PackageLicenseUrl>https://github.com/Kukks/dotnet-vss/blob/master/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/Kukks/dotnet-vss</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <PackageVersion>1.0.1</PackageVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.27.2"/>
-        <PackageReference Include="Grpc.Net.Client" Version="2.65.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="8.0.8"/>
+        <PackageReference Include="Google.Protobuf" Version="3.28.3"/>
+        <PackageReference Include="Grpc.Net.Client" Version="2.66.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="8.0.10"/>
 
     </ItemGroup>
 
