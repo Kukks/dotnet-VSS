@@ -1,5 +1,6 @@
-﻿using BTCPayApp.VSS;
+﻿using System.Security.Cryptography;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Microsoft.AspNetCore.DataProtection;
 using Moq;
 using VSSProto;
@@ -157,4 +158,93 @@ public class VSSApiEncryptorClientTests
         mockVssApi.Verify(api => api.DeleteObjectAsync(It.IsAny<DeleteObjectRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         mockProtector.VerifyNoOtherCalls(); // No encryption/decryption calls expected
     }
+    
+    [Fact]
+    public async Task PutObjectAsync_ShouldHandleNullTransactionItems()
+    {
+    
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            var request = new PutObjectRequest
+            {
+                StoreId = "store",
+                TransactionItems = {(KeyValue) null}
+            };
+        });
+        
+    
+    }
+    
+    [Fact]
+    public async Task GetObjectAsync_ShouldHandleUnprotectException()
+    {
+        // Arrange
+        var mockVssApi = new Mock<IVSSAPI>();
+        var mockProtector = new Mock<IDataProtector>();
+    
+        var encryptedData = ByteString.CopyFromUtf8("encrypted");
+        var getObjectResponse = new GetObjectResponse
+        {
+            Value = new KeyValue { Value = encryptedData }
+        };
+    
+        mockVssApi
+            .Setup(api => api.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(getObjectResponse);
+    
+        mockProtector
+            .Setup(p => p.Unprotect(It.IsAny<byte[]>()))
+            .Throws(new CryptographicException("Decryption failed"));
+
+        var client = new VSSApiEncryptorClient(mockVssApi.Object, mockProtector.Object);
+
+        var request = new GetObjectRequest { StoreId = "store", Key = "key1" };
+    
+        // Act & Assert
+        await Assert.ThrowsAsync<CryptographicException>(() => client.GetObjectAsync(request));
+    }
+    
+    [Fact]
+    public async Task ListKeyVersionsAsync_ShouldSkipInvalidDecryption()
+    {
+        // Arrange
+        var mockVssApi = new Mock<IVSSAPI>();
+        var mockProtector = new Mock<IDataProtector>();
+    
+        var validEncryptedData = ByteString.CopyFromUtf8("valid");
+        var invalidEncryptedData = ByteString.CopyFromUtf8("invalid");
+
+        var listResponse = new ListKeyVersionsResponse
+        {
+            KeyVersions =
+            {
+                new KeyValue { Key = "key1", Value = validEncryptedData },
+                new KeyValue { Key = "key2", Value = invalidEncryptedData }
+            }
+        };
+    
+        mockVssApi
+            .Setup(api => api.ListKeyVersionsAsync(It.IsAny<ListKeyVersionsRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(listResponse);
+    
+        mockProtector
+            .Setup(p => p.Unprotect(validEncryptedData.ToByteArray()))
+            .Returns(System.Text.Encoding.UTF8.GetBytes("decrypted-valid"));
+    
+        mockProtector
+            .Setup(p => p.Unprotect(invalidEncryptedData.ToByteArray()))
+            .Throws(new CryptographicException("Decryption failed"));
+
+        var client = new VSSApiEncryptorClient(mockVssApi.Object, mockProtector.Object);
+
+        var request = new ListKeyVersionsRequest { StoreId = "store" };
+    
+        
+       await Assert.ThrowsAsync<CryptographicException>(() => client.ListKeyVersionsAsync(request)); 
+        // Assert
+        mockProtector.Verify(p => p.Unprotect(It.IsAny<byte[]>()), Times.Exactly(2));
+    }
+
+
+
 }

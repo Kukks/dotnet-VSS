@@ -1,9 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Title>Versioned Storage server for dotnet</Title>
+        <Authors>Kukks</Authors>
+        <Description>Client-side library to interact with Versioned Storage Service (VSS).</Description>
+        <Copyright>MIT</Copyright>
+        <PackageTags>bitcoin,lightning,vss,ldk,backup</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageProjectUrl>https://github.com/Kukks/dotnet-vss</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Kukks/dotnet-vss/blob/master/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Kukks/dotnet-vss</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.27.2"/>
+        <PackageReference Include="Grpc.Net.Client" Version="2.65.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="8.0.8"/>
+
+    </ItemGroup>
+
+    <ItemGroup Condition="!$([MSBuild]::IsOSPlatform('OSX'))">
+
+        <Protobuf Include="Protos\vss.proto"/>
+        <Compile Remove="MacHax\**\*"/>
+        <PackageReference Include="Grpc.Tools" Version="2.65.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
 
 </Project>

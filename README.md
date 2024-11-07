@@ -19,3 +19,7 @@ option csharp_namespace = "VSSProto";
 ```
 
 which allows us to automatically generate the C# models from the proto file.
+
+## Gotchas!
+
+On Mac, there is an issue around the source generator for protobuf to c# code. While I expect this to be fixed at some point from the library vendor, we can't wait on this. There is a folder `MacHax` which contains the generates library but is only included when compiling on a Mac. This is a temporary solution until the issue is resolved but may result in missing/different definitions when on mac (regenerate the machax folder when this is the case).
